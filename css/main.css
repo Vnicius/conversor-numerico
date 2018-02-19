@@ -34,6 +34,12 @@
     font-size: 13pt;
 }
 
+.logo-image img{
+    height: 50px;
+    width: auto;
+    margin-top: 10px;
+}
+
 @media (max-width:500px){
     .containerBorder{
         width: 90%;
