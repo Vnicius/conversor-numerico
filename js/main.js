@@ -4,18 +4,21 @@ const hexaToInt = {'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15};
 // Classe pai para conversão
 
 class Conversor{
-    convert (number, tgtBase) {
+    convert(number, tgtBase) {
         let dot = number.indexOf(".");
         let negative = '';
 
+        // verificar se o número é negativo
         if(number[0] === '-') {
             negative = '-';
             number = number.slice(1);
         }
 
         if (dot < 0) {
+            // converte apenas a parte inteira
             return negative + this.intPart(number, tgtBase);
         } else {
+            // converte a parte inteira e decimal
             return negative
                    + (this.intPart(number.slice(0, dot), tgtBase)
                    + this.floatPart(number.slice(dot+1), tgtBase));
@@ -46,10 +49,11 @@ class Decimal extends Conversor{
         }
     }
 
-    intPart (number, tgtBase) {
+    intPart(number, tgtBase) {
         let num = parseInt(number);
         let values = [];
-
+        
+        // dividir pela base e pegar o resto da divisão
         while (num >= tgtBase) {
             values.push(num % tgtBase);
             num = Math.floor(num / tgtBase);
@@ -57,6 +61,7 @@ class Decimal extends Conversor{
 
         values.push(num);
 
+        // converter os valores caso seja na base hexadecimal
         if( tgtBase == 16 ) {
             for(let index = 0; index < values.length; index++ ) {
                 try {
@@ -72,16 +77,19 @@ class Decimal extends Conversor{
         return values ? values.reverse().join('') : '';
     }
 
-    floatPart (number, tgtBase) {
+    floatPart(number, tgtBase) {
         let floatNumber = parseFloat("0." + number);
         let cont = 0;
         let value = ""
 
+        // multiplica o valor pela base e pegar a parte inteira
+        // até 15 execuções
         while(cont++ < 15 && (floatNumber > 0 && floatNumber < 1)){
             floatNumber = floatNumber * tgtBase;
             let intValue = Math.floor(floatNumber);
             floatNumber -= intValue;
 
+            // converte o valor para letra caso seja exadecimal
             if (tgtBase == 16) {
                 if(intToHexa[intValue]) {
                     intValue = intToHexa[intValue];
@@ -111,10 +119,11 @@ class Binary extends Conversor{
         }
     }
 
-    intPart (number, tgtBase) {
+    intPart(number, tgtBase) {
         switch(tgtBase) {
             case 8:
             case 16:
+                // converte para decimal e depois para a base alvo 
                 let dec = this.binToDecimal(number);
                 return dec 
                        ? this.decimalObj.convert(dec.toString(), tgtBase)
@@ -127,10 +136,11 @@ class Binary extends Conversor{
         }
     }
 
-    floatPart (number, tgtBase) {
+    floatPart(number, tgtBase) {
         switch(tgtBase) {
             case 8:
             case 16:
+                // converte para decimal e depois para a base alvo 
                 let dec = this.floatBinToDecimal(number).toString();
 
                 if(dec !== "0") {
@@ -149,7 +159,7 @@ class Binary extends Conversor{
         }
     }
 
-    binToDecimal (number) {
+    binToDecimal(number) {
         let revNumber = number.split('').reverse();
         let decimal = 0;
 
@@ -161,7 +171,7 @@ class Binary extends Conversor{
         return decimal;
     }
 
-    floatBinToDecimal (number) {
+    floatBinToDecimal(number) {
         let numberList = number.split('');
         let decimal = 0;
 
@@ -193,11 +203,12 @@ class Octal extends Conversor{
         }
     }
 
-    intPart (number, tgtBase) {
+    intPart(number, tgtBase) {
 
         switch(tgtBase) {
             case 2:
             case 16:
+            // converte para decimal e depois para a base alvo 
                 let dec = this.octToDecimal(number);
 
                 return dec
@@ -211,11 +222,12 @@ class Octal extends Conversor{
         }
     }
 
-    floatPart (number, tgtBase) {
+    floatPart(number, tgtBase) {
 
         switch(tgtBase) {
             case 2:
             case 16:
+                // converte para decimal e depois para a base alvo 
                 let dec = this.floatOctalToDecimal(number).toString();
                 if(dec !== '0') {
                     let index = dec.indexOf('.')
@@ -244,7 +256,7 @@ class Octal extends Conversor{
         return cont;
     }
 
-    floatOctalToDecimal (number) {
+    floatOctalToDecimal(number) {
         let numberList = number.split('');
         let decimal = 0;
 
@@ -275,13 +287,14 @@ class Hexadecimal extends Conversor{
         }
     }
 
-    intPart (number, tgtBase) {
+    intPart(number, tgtBase) {
 
         number = number.toUpperCase();
 
         switch(tgtBase) {
             case 2:
             case 8:
+                // converte para decimal e depois para a base alvo 
                 let dec = this.hexaToDecimal(number);
                 return dec 
                         ? this.decimalObj.convert(dec.toString(), tgtBase)
@@ -294,13 +307,14 @@ class Hexadecimal extends Conversor{
         }
     }
 
-    floatPart (number, tgtBase) {
+    floatPart(number, tgtBase) {
 
         number = number.toUpperCase();
 
         switch(tgtBase) {
             case 2:
             case 8:
+                // converte para decimal e depois para a base alvo 
                 let dec = this.floatHexaToDecimal(number).toString();
                 
                 if(dec !== "0"){
@@ -337,15 +351,17 @@ class Hexadecimal extends Conversor{
         return cont;
     }
 
-    floatHexaToDecimal (number) {
+    floatHexaToDecimal(number) {
         let numberList = number.split('');
         let decimal = 0;
 
         for(let index = 0; index < numberList.length; index++) {
             let val = parseInt(numberList[index]);
+
             if(hexaToInt[numberList[index]]) {
-                val = hexaToInt[numberList[index]]
+                val = hexaToInt[numberList[index]];
             }
+
             decimal += val * Math.pow(16, (-1) * (index + 1))
         }
 
