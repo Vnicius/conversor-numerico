@@ -1,17 +1,37 @@
 const intToHexa = {10: 'A', 11: 'B', 12: 'C', 13: 'D', 14: 'E', 15: 'F'};
 const hexaToInt = {'A': 10, 'B': 11, 'C': 12, 'D': 13, 'E': 14, 'F': 15};
 
-class Decimal{
+// Classe pai para conversão
+
+class Conversor{
     convert (number, tgtBase) {
         let dot = number.indexOf(".");
+        let negative = '';
+
+        if(number[0] === '-') {
+            negative = '-';
+            number = number.slice(1);
+        }
 
         if (dot < 0) {
-            return this.intPart(number, tgtBase);
+            return negative + this.intPart(number, tgtBase);
         } else {
-            return this.intPart(number.slice(0, dot), tgtBase)
-                   + "." + this.floatPart(number.slice(dot+1), tgtBase);
+            return negative
+                   + (this.intPart(number.slice(0, dot), tgtBase)
+                   + "." + this.floatPart(number.slice(dot+1), tgtBase));
         }
     }
+
+    intPar(number, tgtBase) {       
+    }
+
+    floatPart(number, tgtBase) {
+    }
+}
+
+// DECIMAL
+
+class Decimal extends Conversor{
 
     intPart (number, tgtBase) {
         let num = parseInt(number);
@@ -61,26 +81,20 @@ class Decimal{
     }
 }
 
-class Binary{
-    convert (number, tgtBase) {
-        let dot = number.indexOf(".");
+// BINÁRIO
 
-        if (dot < 0) {
-            return this.intPart(number, tgtBase);
-        } else {
-            return this.intPart(number.slice(0, dot), tgtBase)
-                   + this.floatPart(number.slice(dot+1), tgtBase);
-        }
+class Binary extends Conversor{
+    constructor() {
+        super();
+        this.decimalObj = new Decimal();
     }
 
     intPart (number, tgtBase) {
-        let decimalObj = new Decimal();
-
         switch(tgtBase) {
             case 8:
             case 16:
                 let dec = this.binToDecimal(number);
-                return decimal.convert(dec.toString(), tgtBase);
+                return this.decimalObj.convert(dec.toString(), tgtBase);
 
             case 10:
                 return this.binToDecimal(number);
@@ -88,8 +102,6 @@ class Binary{
     }
 
     floatPart (number, tgtBase) {
-        let decimalObj = new Decimal();
-
         switch(tgtBase) {
             case 8:
             case 16:
@@ -97,7 +109,7 @@ class Binary{
                 let index = dec.indexOf('.')
                 dec = dec.slice(index + 1);
 
-                return "." + decimalObj.floatPart(dec, tgtBase);
+                return "." + this.decimalObj.floatPart(dec, tgtBase);
 
             case 10:
                 return this.floatBinToDecimal(number);
@@ -130,27 +142,23 @@ class Binary{
     }
 }
 
-class Octal {
-    convert (number, tgtBase) {
-        let dot = number.indexOf(".");
+// OCTAL
 
-        if (dot < 0) {
-            return this.intPart(number, tgtBase);
-        } else {
-            return this.intPart(number.slice(0, dot), tgtBase)
-                   + this.floatPart(number.slice(dot+1), tgtBase);
-        }
+class Octal extends Conversor{
+
+    constructor() {
+        super();
+        this.decimalObj = new Decimal();
     }
 
     intPart (number, tgtBase) {
-        let decimalObj = new Decimal();
 
         switch(tgtBase) {
             case 2:
             case 16:
                 let dec = this.octToDecimal(number);
 
-                return decimalObj.convert(dec.toString(), tgtBase);
+                return this.decimalObj.convert(dec.toString(), tgtBase);
 
             case 10:
                 return this.octToDecimal(number);
@@ -158,7 +166,6 @@ class Octal {
     }
 
     floatPart (number, tgtBase) {
-        let decimalObj  = new Decimal();
 
         switch(tgtBase) {
             case 2:
@@ -167,7 +174,7 @@ class Octal {
                 let index = dec.indexOf('.')
                 dec = dec.slice(index + 1);
 
-                return "." + decimalObj.floatPart(dec, tgtBase);
+                return "." + this.decimalObj.floatPart(dec, tgtBase);
             case 10:
                 return this.floatOctalToDecimal(number);
         }
@@ -198,26 +205,24 @@ class Octal {
 
 }
 
-class Hexadecimal {
-    convert (number, tgtBase) {
-        let dot = number.indexOf(".");
+// HEXADECIMAL
 
-        if (dot < 0) {
-            return this.intPart(number.toUpperCase(), tgtBase);
-        } else {
-            return this.intPart(number.slice(0, dot), tgtBase)
-                   + this.floatPart(number.slice(dot+1), tgtBase);
-        }
+class Hexadecimal extends Conversor{
+
+    constructor() {
+        super();
+        this.decimalObj = new Decimal();
     }
 
     intPart (number, tgtBase) {
-        let decimalObj = new Decimal();
+
+        number = number.toUpperCase();
 
         switch(tgtBase) {
             case 2:
             case 8:
                 let dec = this.hexaToDecimal(number);
-                return decimalObj.convert(dec.toString(), tgtBase);
+                return this.decimalObj.convert(dec.toString(), tgtBase);
             
             case 10:
                 return this.hexaToDecimal(number);
@@ -225,7 +230,8 @@ class Hexadecimal {
     }
 
     floatPart (number, tgtBase) {
-        let decimalObj = new Decimal();
+
+        number = number.toUpperCase();
 
         switch(tgtBase) {
             case 2:
@@ -234,7 +240,7 @@ class Hexadecimal {
                 let index = dec.indexOf('.')
                 dec = dec.slice(index + 1);
 
-                return "." + decimalObj.floatPart(dec, tgtBase);
+                return "." + this.decimalObj.floatPart(dec, tgtBase);
             case 10:
                 return this.floatHexaToDecimal(number)
         }
@@ -274,11 +280,12 @@ class Hexadecimal {
     }
 }
 
+// Constantes
+
 const decimal = new Decimal();
 const bin = new Binary();
 const oct = new Octal();
 const hexa = new Hexadecimal();
-
 
 
 /* CHANGE HANDLERS */
