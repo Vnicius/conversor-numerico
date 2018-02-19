@@ -18,7 +18,7 @@ class Conversor{
         } else {
             return negative
                    + (this.intPart(number.slice(0, dot), tgtBase)
-                   + "." + this.floatPart(number.slice(dot+1), tgtBase));
+                   + this.floatPart(number.slice(dot+1), tgtBase));
         }
     }
 
@@ -32,6 +32,19 @@ class Conversor{
 // DECIMAL
 
 class Decimal extends Conversor{
+
+    constructor() {
+        super();
+        this.re = new RegExp('^[0-9]+\.?[0-9]*$');
+    }
+
+    convert(number, tgtBase) {
+        if(this.re.exec(number)){
+            return super.convert(number, tgtBase);
+        } else {
+            return "";
+        }
+    }
 
     intPart (number, tgtBase) {
         let num = parseInt(number);
@@ -56,7 +69,7 @@ class Decimal extends Conversor{
             }
         }
 
-        return values.reverse().join('');
+        return values ? values.reverse().join('') : '';
     }
 
     floatPart (number, tgtBase) {
@@ -77,7 +90,7 @@ class Decimal extends Conversor{
             value += intValue;
         }
 
-        return value;
+        return value ? "." + value : "";
     }
 }
 
@@ -87,6 +100,15 @@ class Binary extends Conversor{
     constructor() {
         super();
         this.decimalObj = new Decimal();
+        this.re = new RegExp('^[0-1]+\.?[0-1]*$');
+    }
+
+    convert(number, tgtBase) {
+        if(this.re.exec(number)){
+            return super.convert(number, tgtBase);
+        } else {
+            return "";
+        }
     }
 
     intPart (number, tgtBase) {
@@ -94,10 +116,14 @@ class Binary extends Conversor{
             case 8:
             case 16:
                 let dec = this.binToDecimal(number);
-                return this.decimalObj.convert(dec.toString(), tgtBase);
+                return dec 
+                       ? this.decimalObj.convert(dec.toString(), tgtBase)
+                       : "";
 
             case 10:
-                return this.binToDecimal(number);
+                let ret = this.binToDecimal(number);
+
+                return ret ? ret : "";
         }
     }
 
@@ -106,13 +132,20 @@ class Binary extends Conversor{
             case 8:
             case 16:
                 let dec = this.floatBinToDecimal(number).toString();
-                let index = dec.indexOf('.')
-                dec = dec.slice(index + 1);
 
-                return "." + this.decimalObj.floatPart(dec, tgtBase);
+                if(dec !== "0") {
+                    let index = dec.indexOf('.')
+                    dec = dec.slice(index + 1);
+
+                    return this.decimalObj.floatPart(dec, tgtBase);
+                }
+                
+                return "";
 
             case 10:
-                return this.floatBinToDecimal(number);
+                let ret = this.floatBinToDecimal(number);
+
+                return ret ? ret : "";
         }
     }
 
@@ -149,6 +182,15 @@ class Octal extends Conversor{
     constructor() {
         super();
         this.decimalObj = new Decimal();
+        this.re = new RegExp('^[0-7]+\.?[0-7]*$');
+    }
+
+    convert(number, tgtBase) {
+        if(this.re.exec(number)){
+            return super.convert(number, tgtBase);
+        } else {
+            return "";
+        }
     }
 
     intPart (number, tgtBase) {
@@ -158,10 +200,14 @@ class Octal extends Conversor{
             case 16:
                 let dec = this.octToDecimal(number);
 
-                return this.decimalObj.convert(dec.toString(), tgtBase);
+                return dec
+                        ? this.decimalObj.convert(dec.toString(), tgtBase)
+                        : "";
 
             case 10:
-                return this.octToDecimal(number);
+                let ret = this.octToDecimal(number);
+
+                return ret ? ret : "";
         }
     }
 
@@ -171,12 +217,18 @@ class Octal extends Conversor{
             case 2:
             case 16:
                 let dec = this.floatOctalToDecimal(number).toString();
-                let index = dec.indexOf('.')
-                dec = dec.slice(index + 1);
-
-                return "." + this.decimalObj.floatPart(dec, tgtBase);
+                if(dec !== '0') {
+                    let index = dec.indexOf('.')
+                    dec = dec.slice(index + 1);
+    
+                    return this.decimalObj.floatPart(dec, tgtBase);
+                } else {
+                    return "";
+                }
             case 10:
-                return this.floatOctalToDecimal(number);
+                let ret = this.floatOctalToDecimal(number);
+
+                return ret ? ret : "";
         }
         
     }
@@ -212,6 +264,15 @@ class Hexadecimal extends Conversor{
     constructor() {
         super();
         this.decimalObj = new Decimal();
+        this.re = new RegExp('^([0-9]|[a-fA-F])+\.?([0-9]|[a-fA-F])*$');
+    }
+
+    convert(number, tgtBase) {
+        if(this.re.exec(number)){
+            return super.convert(number, tgtBase);
+        } else {
+            return "";
+        }
     }
 
     intPart (number, tgtBase) {
@@ -222,10 +283,14 @@ class Hexadecimal extends Conversor{
             case 2:
             case 8:
                 let dec = this.hexaToDecimal(number);
-                return this.decimalObj.convert(dec.toString(), tgtBase);
+                return dec 
+                        ? this.decimalObj.convert(dec.toString(), tgtBase)
+                        : "";
             
             case 10:
-                return this.hexaToDecimal(number);
+                let ret = this.hexaToDecimal(number);
+
+                return ret ? ret : "";
         }
     }
 
@@ -237,12 +302,20 @@ class Hexadecimal extends Conversor{
             case 2:
             case 8:
                 let dec = this.floatHexaToDecimal(number).toString();
-                let index = dec.indexOf('.')
-                dec = dec.slice(index + 1);
+                
+                if(dec !== "0"){
+                    let index = dec.indexOf('.')
+                    dec = dec.slice(index + 1);
 
-                return "." + this.decimalObj.floatPart(dec, tgtBase);
+                    return this.decimalObj.floatPart(dec, tgtBase);
+                }
+
+                return "";
+                
             case 10:
-                return this.floatHexaToDecimal(number)
+                let ret = this.floatHexaToDecimal(number);
+
+                return ret ? ret : "";
         }
     }
 
