@@ -39,8 +39,25 @@ class Decimal{
         return values.reverse().join('');
     }
 
-    floatPart (number) {
-        console.log(number)
+    floatPart (number, tgtBase) {
+        let floatNumber = parseFloat("0." + number);
+        let cont = 0;
+        let value = ""
+
+        while(cont++ < 15 && (floatNumber > 0 && floatNumber < 1)){
+            floatNumber = floatNumber * tgtBase;
+            let intValue = Math.floor(floatNumber);
+            floatNumber -= intValue;
+
+            if (tgtBase == 16) {
+                if(intToHexa[intValue]) {
+                    intValue = intToHexa[intValue];
+                }
+            }
+            value += intValue;
+        }
+
+        return value;
     }
 }
 
@@ -52,33 +69,39 @@ class Binary{
             return this.intPart(number, tgtBase);
         } else {
             return this.intPart(number.slice(0, dot), tgtBase)
-                   + "." + this.floatPart(number.slice(dot+1), tgtBase);
+                   + this.floatPart(number.slice(dot+1), tgtBase);
         }
     }
 
     intPart (number, tgtBase) {
-        let zeroes = 0
-        let values = [];
-        let aux = 0
         let decimalObj = new Decimal();
 
         switch(tgtBase) {
             case 8:
             case 16:
                 let dec = this.binToDecimal(number);
-
-                return decimal.convert(dec.toString(), tgtBase)
-
-                break;
+                return decimal.convert(dec.toString(), tgtBase);
 
             case 10:
                 return this.binToDecimal(number);
-                break;
         }
     }
 
-    floatPart (number) {
-        console.log(number)
+    floatPart (number, tgtBase) {
+        let decimalObj = new Decimal();
+
+        switch(tgtBase) {
+            case 8:
+            case 16:
+                let dec = this.floatBinToDecimal(number).toString();
+                let index = dec.indexOf('.')
+                dec = dec.slice(index + 1);
+
+                return "." + decimalObj.floatPart(dec, tgtBase);
+
+            case 10:
+                return this.floatBinToDecimal(number);
+        }
     }
 
     binToDecimal (number) {
@@ -92,6 +115,19 @@ class Binary{
         }
         return decimal;
     }
+
+    floatBinToDecimal (number) {
+        let numberList = number.split('');
+        let decimal = 0;
+
+        for(let index = 0; index < numberList.length; index++) {
+            if(numberList[index] === '1') {
+                decimal += Math.pow(2, (-1) * (index + 1))
+            }
+        }
+
+        return decimal;
+    }
 }
 
 class Octal {
@@ -102,13 +138,11 @@ class Octal {
             return this.intPart(number, tgtBase);
         } else {
             return this.intPart(number.slice(0, dot), tgtBase)
-                   + "." + this.floatPart(number.slice(dot+1), tgtBase);
+                   + this.floatPart(number.slice(dot+1), tgtBase);
         }
     }
 
     intPart (number, tgtBase) {
-        let values = [];
-        let aux = 0
         let decimalObj = new Decimal();
 
         switch(tgtBase) {
@@ -123,8 +157,21 @@ class Octal {
         }
     }
 
-    floatPart (number) {
-        console.log(number)
+    floatPart (number, tgtBase) {
+        let decimalObj  = new Decimal();
+
+        switch(tgtBase) {
+            case 2:
+            case 16:
+                let dec = this.floatOctalToDecimal(number).toString();
+                let index = dec.indexOf('.')
+                dec = dec.slice(index + 1);
+
+                return "." + decimalObj.floatPart(dec, tgtBase);
+            case 10:
+                return this.floatOctalToDecimal(number);
+        }
+        
     }
 
     octToDecimal(number) {
@@ -138,6 +185,17 @@ class Octal {
         return cont;
     }
 
+    floatOctalToDecimal (number) {
+        let numberList = number.split('');
+        let decimal = 0;
+
+        for(let index = 0; index < numberList.length; index++) {
+            decimal += parseInt(numberList[index]) * Math.pow(8, (-1) * (index + 1))
+        }
+
+        return decimal;
+    }
+
 }
 
 class Hexadecimal {
@@ -148,20 +206,17 @@ class Hexadecimal {
             return this.intPart(number.toUpperCase(), tgtBase);
         } else {
             return this.intPart(number.slice(0, dot), tgtBase)
-                   + "." + this.floatPart(number.slice(dot+1), tgtBase);
+                   + this.floatPart(number.slice(dot+1), tgtBase);
         }
     }
 
     intPart (number, tgtBase) {
-        let values = [];
-        let aux = 0;
         let decimalObj = new Decimal();
 
         switch(tgtBase) {
             case 2:
             case 8:
                 let dec = this.hexaToDecimal(number);
-                console.log(dec)
                 return decimalObj.convert(dec.toString(), tgtBase);
             
             case 10:
@@ -169,8 +224,20 @@ class Hexadecimal {
         }
     }
 
-    floatPart (number) {
-        console.log(number)
+    floatPart (number, tgtBase) {
+        let decimalObj = new Decimal();
+
+        switch(tgtBase) {
+            case 2:
+            case 8:
+                let dec = this.floatHexaToDecimal(number).toString();
+                let index = dec.indexOf('.')
+                dec = dec.slice(index + 1);
+
+                return "." + decimalObj.floatPart(dec, tgtBase);
+            case 10:
+                return this.floatHexaToDecimal(number)
+        }
     }
 
     hexaToDecimal(number) {
@@ -185,12 +252,25 @@ class Hexadecimal {
             } else {
                 value = parseInt(reverseNumber[index]);
             }
-            console.log("value")
-            console.log(value)
             cont += value * Math.pow(16, index);
         }
 
         return cont;
+    }
+
+    floatHexaToDecimal (number) {
+        let numberList = number.split('');
+        let decimal = 0;
+
+        for(let index = 0; index < numberList.length; index++) {
+            let val = parseInt(numberList[index]);
+            if(hexaToInt[numberList[index]]) {
+                val = hexaToInt[numberList[index]]
+            }
+            decimal += val * Math.pow(16, (-1) * (index + 1))
+        }
+
+        return decimal;
     }
 }
 
@@ -254,8 +334,6 @@ function changeHexa() {
 
     if(document.getElementById('hexaInput').value){
         document.getElementById('decimalInput').value = hexa.convert(number, 10);
-        console.log("hexaBIn")
-        console.log(hexa.convert(number, 2));
         document.getElementById('binaryInput').value = hexa.convert(number, 2);
         document.getElementById('octalInput').value = hexa.convert(number, 8);
     } else {
